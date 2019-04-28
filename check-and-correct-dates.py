@@ -172,6 +172,7 @@ def test_approxdate_isin(one, two):
 PATTERS = [
     re.compile(r'^(?:IMG|VID|PANO)_(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})_(?P<hour>\d{2})(?P<minute>\d{2})(?P<second>\d{2})(?:_\d+)?\.(?:jpg|mpg|mp4)', re.I),  # Nexus 5/5X
     re.compile(r'^(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2}) (?P<hour>\d{2})\.(?P<minute>\d{2})\.(?P<second>\d{2})(?:-\d+)?\.(?:jpg|png)', re.I),  # Wildfire S/Samsung
+    re.compile(r'^(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})_(?P<hour>\d{2})(?P<minute>\d{2})(?P<second>\d{2})[^\d]', re.I),  # Generic Canon (?)
     re.compile(r'^(?:IMG|VID)-(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})-WA\d+\.(jpe?g|mp4)', re.I),  # WhatsApp
     re.compile(r'^(?:IMG|VID)-\d{8}-WA\d+ \((?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})T(?P<hour>\d{2})_(?P<minute>\d{2})_(?P<second>\d{2})\.\d+\)\.(jpe?g|mp4)', re.I),  # WhatsApp
 ]
@@ -222,6 +223,8 @@ def guess_date_from_path(path):
     ('2012/1204 - Hochzeit/Mama Ursula/BILD0325.JPG', ApproxDate(2012, 4)),
     ('2017/Foto-DVD der Eulengruppe 2017/Turnen/IMG_7565.JPG', ApproxDate(2017)),
     ('DSC_2098.JPG', None),
+    ('2018/Foto-DVD Krippe 2017+18/bereits bestellt/20161219_100019 - Kopie.jpg', ApproxDate(2016, 12, 19, 10, 0, 19)),
+    ('2018/Foto-DVD Krippe 2017+18/bereits bestellt/20371029_10209743734737422_118174093_n - Kopie (3).jpg', ApproxDate(2018)),
 ])
 def test_guess_date_from_path(inp, out):
     assert guess_date_from_path(inp) == out
