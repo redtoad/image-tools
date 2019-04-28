@@ -48,11 +48,12 @@ def check_date(img):
             my_image = Image(image_file)
             img_ts = to_datetime(my_image.datetime)
             precise_enough = path_ts.is_precise() and abs((img_ts - path_ts.as_datetime()).seconds) > 2
-            if img_ts not in path_ts and precise_enough:
-                termcolor.cprint('! %s  %s  %s' % (img_ts, path_ts, img), 'red', attrs=['bold'])
+            if img_ts not in path_ts:
+                if not precise_enough:
+                    termcolor.cprint('! %s  %s  %s' % (img_ts, path_ts, img), 'red', attrs=['bold'])
             else:
                 termcolor.cprint('  %s  %s  %s' % (img_ts, path_ts, img))
-        except (IOError, KeyError, AttributeError) as e:
+        except (IOError, KeyError, AttributeError, AssertionError) as e:
             termcolor.cprint('E %s  %s  %s  Error: %s' % ('.... .. .. .. .. ..', path_ts, img, e), 'red', attrs=['bold'])
 
 
