@@ -7,22 +7,22 @@ This assumes the following directory stucture:
 
         <ROOT>
         ├── 2005
-        │   ├── 0503
-        │   ├── 0509 - tarvel
-        │   ├── ...
+        │   ├── 0503
+        │   ├── 0509 - tarvel
+        │   ├── ...
         ├── 2008
         ├── 2011
         ├── 2012
-        │   ├── 1201
-        │   ├── 1202
-        │   ├── 1204 wedding
-        │   │   ├── photographer
-        │   │   ├── Max
-        │   │   │   ├── pics
-        │   │   │   └── movies
-        │   │   ├── Mom
-        │   │   ├── Dad
-        │   └── ...
+        │   ├── 1201
+        │   ├── 1202
+        │   ├── 1204 wedding
+        │   │   ├── photographer
+        │   │   ├── Max
+        │   │   │   ├── pics
+        │   │   │   └── movies
+        │   │   ├── Mom
+        │   │   ├── Dad
+        │   └── ...
         │
 
 """
@@ -37,8 +37,22 @@ import termcolor
 
 import pytest
 
+# terminal colours
 RED = r'\033[0;31m'
 NC = r'\033[0m'
+
+
+def get_first_attr(obj, *attrs, default=None):
+    """
+    Returns the first attribute it finds (or default value).
+    """
+    none = object()
+    for attr in attrs:
+        value = getattr(obj, attr, none)
+        if value is not none:
+            return value
+    return default
+
 
 def check_date(img):
     with open(img, 'rb') as image_file:
@@ -46,7 +60,8 @@ def check_date(img):
         to_datetime = lambda ts: datetime.datetime.strptime(ts, '%Y:%m:%d %H:%M:%S')
         try:
             my_image = Image(image_file)
-            img_ts = to_datetime(my_image.datetime)
+            ts = get_first_attr(my_image, "datetime", "datetime_original", "datetime_digitized", )
+            img_ts = to_datetime(ts)
             precise_enough = path_ts.is_precise() and abs((img_ts - path_ts.as_datetime()).seconds) > 2
             if img_ts not in path_ts:
                 if not precise_enough:
@@ -59,7 +74,13 @@ def check_date(img):
 
 class ApproxDate(object):
 
-    def __init__(self, year: int, month: int = None, day: int = None, hour: int = None, minute: int = None, second: int = None):
+    """
+    ApproxDate is a datetime class that can deal with missing information. This way
+    we can see if ``ApproxDate(2014)`` contains ``datetime.date(2014, 9, 17)``.
+    """
+
+    def __init__(self, year: int, month: int = None, day: int = None,
+                 hour: int = None, minute: int = None, second: int = None):
         self.year, self.month, self.day = year, month, day
         self.hour, self.minute, self.second = hour, minute, second
 
