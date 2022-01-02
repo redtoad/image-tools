@@ -4,11 +4,12 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+pytest = "*"
+py = ">=1.10.0"  # fix for CVE-2020-29651
 
 [packages]
 exif = "==0.5.1"
-pytest = "*"
 termcolor = "*"
 
 [requires]
-python_version = "3.5.4"
+python_version = "3.9"
