@@ -31,6 +31,8 @@ import datetime
 import os
 import re
 import sys
+import datetime
+from typing import Optional
 
 from exif import Image
 import termcolor
@@ -54,22 +56,33 @@ def get_first_attr(obj, *attrs, default=None):
     return default
 
 
+EXIF_TS_FORMAT = '%Y:%m:%d %H:%M:%S'
+
+
+def load_image_datetime(path: str) -> Optional[datetime.datetime]:
+    """
+    Load datetime from image's EXIF data-
+    """
+    with open(path, 'rb') as image_file:
+        img = Image(image_file)
+        ts = get_first_attr(img, "datetime", "datetime_original", "datetime_digitized", default=None)
+        if ts is not None:
+            return datetime.datetime.strptime(ts, EXIF_TS_FORMAT)
+        return None  # no datetime found
+
+
 def check_date(img):
-    with open(img, 'rb') as image_file:
+    try:
         path_ts = guess_date_from_path(img)
-        to_datetime = lambda ts: datetime.datetime.strptime(ts, '%Y:%m:%d %H:%M:%S')
-        try:
-            my_image = Image(image_file)
-            ts = get_first_attr(my_image, "datetime", "datetime_original", "datetime_digitized", )
-            img_ts = to_datetime(ts)
-            precise_enough = path_ts.is_precise() and abs((img_ts - path_ts.as_datetime()).seconds) > 2
-            if img_ts not in path_ts:
-                if not precise_enough:
-                    termcolor.cprint('! %s  %s  %s' % (img_ts, path_ts, img), 'red', attrs=['bold'])
-            else:
-                termcolor.cprint('  %s  %s  %s' % (img_ts, path_ts, img))
-        except (IOError, KeyError, AttributeError, AssertionError) as e:
-            termcolor.cprint('E %s  %s  %s  Error: %s' % ('.... .. .. .. .. ..', path_ts, img, e), 'red', attrs=['bold'])
+        exif_ts = load_image_datetime(img)
+        precise_enough = path_ts.is_precise() and abs((exif_ts - path_ts.as_datetime()).seconds) > 2
+        if exif_ts not in path_ts:
+            if not precise_enough:
+                termcolor.cprint('! %s  %s  %s' % (exif_ts, path_ts, img), 'red', attrs=['bold'])
+        else:
+            termcolor.cprint('  %s  %s  %s' % (exif_ts, path_ts, img))
+    except (IOError, KeyError, AttributeError, AssertionError) as e:
+        termcolor.cprint('E %s  %s  %s  Error: %s' % ('.... .. .. .. .. ..', path_ts, img, e), 'red', attrs=['bold'])
 
 
 class ApproxDate(object):
